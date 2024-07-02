@@ -69,6 +69,18 @@
             /// 剩余空间不足
             /// </summary>
             SpaceIsInsufficientWarn,
+            /// <summary>
+            /// 登陆失效
+            /// </summary>
+            LoginFailure,
+            /// <summary>
+            /// 登陆即将失效
+            /// </summary>
+            LoginWillExpireSoon,
+            /// <summary>
+            /// 有可用新版本
+            /// </summary>
+            UpdateAvailable,
         }
 ```
 
@@ -78,6 +90,7 @@
 {
     "id":"3a3485e2-8e17-4446-ad49-8e423c16ee7f",
     "type":0,
+    "type_name":"StartLive",
     "uid":7855561,
     "hook_time":"2022-04-11T01:45:49.0457189+08:00",
     "user_info":{
@@ -154,6 +167,10 @@
             /// 类型
             /// </summary>
             public HookType type { set; get; }
+            /// <summary>
+            /// 返回的HookType类型枚举名称
+            /// </summary>
+            public string type_name { set; get; }
             /// <summary>
             /// 用户UID
             /// </summary>

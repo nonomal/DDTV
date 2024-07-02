@@ -33,7 +33,6 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
-.github/
 DDTV_TCP服务端/
 demo/
 播放器/
@@ -434,3 +433,7 @@ healthchecksdb
 /DDTV_WEB_Server/BiliUser.ini11
 /Doc/docs/.vuepress/dist/
 /DanMu_Demo
+/TestProject
+/CLI/Properties/launchSettings.json
+/TESTP
+/PushUpdate

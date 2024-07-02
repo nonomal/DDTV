@@ -8,9 +8,12 @@
 |API操作|❌|✅|一般用于程序调用，每个请求都可以直接调用，每次操作都需要携带根据key计算的sig|
 
 ## 两种接口的调用差异
-请务必先请查看该路径下WEB请求和API操作相关页面的说明  
-请务必先请查看该路径下WEB请求和API操作相关页面的说明  
-请务必先请查看该路径下WEB请求和API操作相关页面的说明  
+请务必先请查看该路径下WEB请求和API操作相关页面的说明
+请务必先请查看该路径下WEB请求和API操作相关页面的说明
+请务必先请查看该路径下WEB请求和API操作相关页面的说明
+
+## swagger
+DDTV_WEB_Server自带swagger方便进行调试，请使用`http(s)://[IP地址]:11419/swagger/index.html`进行访问调试
 
 ## 已实现的通用API列表
 |方式|名称|返回内容|解释|
@@ -18,9 +21,11 @@
 |POST|System_Info|JSON|[获取系统运行情况](./#post-api-system-info)|
 |POST|System_Config|JSON|[获取系统配置文件信息](./#post-api-system-config)|
 |POST|System_Resources|JSON|[获取系统硬件资源使用情况](./#post-api-system-resources)|
+|POST|System_Log|JSON|[获取历史日志](./#post-api-system-log)|
+|POST|System_LatestLog|JSON|[获取最新日志](./#post-api-system-latestlog)|
 |POST|System_QueryWebFirstStart|JSON|[返回一个可以自行设定的初始化状态值](./#post-api-system-querywebfirststart)|
 |POST|System_SetWebFirstStart|JSON|[设置初始化状态值](./#post-api-system-setsebfirststart)|
-|POST|System_QueryUserState|JSON|[查询B站接口返回数据判断用户登陆状态是否有效](./#post-api-system-queryuserstate)|
+|POST|System_QueryUserState|JSON|[查询阿B接口返回数据判断用户登陆状态是否有效](./#post-api-system-queryuserstate)|
 |POST|Config_Transcod|JSON|[设置自动转码总开关](./#post-api-config-Transcod)|
 |POST|Config_FileSplit|JSON|[根据文件大小自动切片](./#post-api-config-filesplit)|
 |POST|Config_DanmuRec|JSON|[弹幕录制总共开关(包括礼物、舰队、SC)](./#post-api-config-danmurec)|
@@ -28,7 +33,7 @@
 |POST|File_GetAllFileList|JSON|[获取已录制的文件列表](./#post-api-file-getallfilelist)|
 |POST|File_GetTypeFileList|JSON|[分类获取已录制的文件总列表](./#post-api-file-gettypefilelist)|
 |POST|File_GetFilePathList|JSON|[根据文件树结构返回已录制的文件总列表](./#post-api-file-getfilepathlist)|
-|POST|File_GetFile|FileStram|[下载对应的文件](./#post-api-file-getfile)|
+|GET|File_GetFile|FileStram|[下载对应的文件](./#post-api-file-getfile)|
 |POST|Login|JSON|[WEB登陆](./#post-api-login)|
 |GET|loginqr|PNG|[在提示登陆的情况下获取用于的登陆二维码](./#get-api-loginqr)|
 |POST|Login_Reset|JSON|[重新登陆哔哩哔哩账号](./#post-api-login-reset)|
@@ -44,7 +49,7 @@
 |POST|Room_Del|JSON|[删除一个房间配置](./#post-api-room-del)|
 |POST|Room_AutoRec|JSON|[修改房间自动录制配置信息](./#post-api-room-autorec)|
 |POST|Room_DanmuRec|JSON|[修改房间弹幕录制配置信息](./#post-api-room-danmurec)|
-|POST|User_Search|JSON|[通过B站搜索搜索直播用户](./#post-api-user-search)|
+|POST|User_Search|JSON|[通过阿B搜索搜索直播用户](./#post-api-user-search)|
 
 ## 返回数据内容格式
 
@@ -68,7 +73,7 @@
             /// </summary>
             public T data { get; set; }
         }
-```  
+```
 
 ## 返回结果状态码列表
 
@@ -84,79 +89,99 @@
 ## 接口详细说明
 ### `POST /api/System_Info`
 ::: details 获取系统运行情况
-- 私有变量  
+- 私有变量
 
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
-    public class SystemResourceClass
-    {
-        /// <summary>
-        /// 平台
-        /// </summary>
-        public string Platform { set; get; }
-        /// <summary>
-        /// CPU使用率
-        /// </summary>
-        public double CPU_usage { set; get; }
-        /// <summary>
-        /// 内存
-        /// </summary>
-        public MemInfo Memory { set; get; }  
-        /// <summary>
-        /// 硬盘信息
-        /// </summary>
-        public List<HDDInfo> HDDInfo { set; get; }
-        public class MemInfo
+        public class Info
         {
             /// <summary>
-            /// 总计内存大小
+            /// 当前DDTV版本号
             /// </summary>
-            public long Total { get; set; }
+            public string DDTVCore_Ver { get; set; }
             /// <summary>
-            /// 可用内存大小
+            /// 监控房间数量
             /// </summary>
-            public long Available { get; set; }
+            public int Room_Quantity { get; set; }
+            /// <summary>
+            /// 设置的服务器名称
+            /// </summary>
+            public string ServerName { get; set; }
+            /// <summary>
+            /// 服务器的唯一资源编号
+            /// </summary>
+            public string ServerAID { get; set; }
+            /// <summary>
+            /// 操作系统相关信息
+            /// </summary>
+            public OS_Info os_Info { get; set; }
+            /// <summary>
+            /// 下载任务基础信息
+            /// </summary>
+            public Download_Info download_Info { get; set; }
+            public class OS_Info
+            {
+                /// <summary>
+                /// 系统版本
+                /// </summary>
+                public string OS_Ver { get; set; }
+                /// <summary>
+                /// 系统类型
+                /// </summary>
+                public string OS_Tpye { get; set; }
+                /// <summary>
+                /// 使用内存量，单位bit
+                /// </summary>
+                public long Memory_Usage { get; set; }
+                /// <summary>
+                /// 运行时版本
+                /// </summary>
+                public string Runtime_Ver { get; set; }
+                /// <summary>
+                /// 是否在交互模式下
+                /// </summary>
+                public bool UserInteractive { get; set; }
+                /// <summary>
+                /// 关联的用户
+                /// </summary>
+                public string Associated_Users { get; set; }
+                /// <summary>
+                /// 工作目录
+                /// </summary>
+                public string Current_Directory { get; set; }
+                /// <summary>
+                /// Core程序核心框架版本
+                /// </summary>
+                public string AppCore_Ver { set; get; }
+                /// <summary>
+                /// Web程序核心框架版本
+                /// </summary>
+                public string WebCore_Ver { set; get; }
+            }
+            public class Download_Info
+            {
+                /// <summary>
+                /// 下载中的任务数
+                /// </summary>
+                public int Downloading { get; set; }
+                /// <summary>
+                /// 下载结束的任务数
+                /// </summary>
+                public int Completed_Downloads { get; set; }
+            }
         }
-        public class HDDInfo
-        {
-            /// <summary>
-            /// 注册路径
-            /// </summary>
-            public string FileSystem { set; get; }
-            /// <summary>
-            /// 硬盘大小
-            /// </summary>
-            public string Size { get; set; }
-            /// <summary>
-            /// 已使用大小
-            /// </summary>
-            public string Used { get; set; }
-            /// <summary>
-            /// 可用大小
-            /// </summary>
-            public string Avail { get; set; }
-            /// <summary>
-            /// 使用率
-            /// </summary>
-            public string Usage { get; set; }
-            /// <summary>
-            /// 挂载路径
-            /// </summary>
-            public string MountPath { set; get; }
-        }
-    }
 ```
 :::
 
 ### `POST /api/System_Config`
 ::: details 获取系统配置文件信息
-- 私有变量  
+- 私有变量
 
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
         public class Config
         {
@@ -167,6 +192,10 @@
                 /// 配置键
                 /// </summary>
                 public Key Key { set; get; }
+                /// <summary>
+                /// 配置键名称
+                /// </summary>
+                public string KeyName { set; get; }
                 /// <summary>
                 /// 配置分组
                 /// </summary>
@@ -179,7 +208,7 @@
                 /// 是否有效
                 /// </summary>
                 public bool Enabled { set; get; } = false;
-                
+
             }
         }
         /// <summary>
@@ -243,8 +272,8 @@
             /// </summary>
             DownloadFileName,
             /// <summary>
-            /// 转码默认参数 (应该是带{After}{Before}的ffmpeg参数字符串，如:-i {Before} -vcodec copy -acodec copy {After})
-            /// 组：Core      默认值：-i {Before} -vcodec copy -acodec copy {After}
+            /// 转码默认参数 (应该是带{After}{Before}的ffmpeg参数字符串，如:-y -i {Before} -c copy {After})
+            /// 组：Core      默认值：-y -i {Before} -c copy {After}
             /// </summary>
             TranscodParmetrs,
             /// <summary>
@@ -384,14 +413,14 @@
 
 ### `POST /api/System_Resources`
 ::: details 获取系统硬件资源使用情况
-- 私有变量  
+- 私有变量
 
 无
 
 - 注意事项
 该接口消耗的系统硬件资源较高，请勿频繁调用！！！！！
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
     public class SystemResourceClass
     {
@@ -406,7 +435,7 @@
         /// <summary>
         /// 内存
         /// </summary>
-        public MemInfo Memory { set; get; }  
+        public MemInfo Memory { set; get; }
         /// <summary>
         /// 硬盘信息
         /// </summary>
@@ -458,16 +487,257 @@
 ```
 :::
 
+### `POST /api/System_Log`
+::: details 获取历史日志
+- 私有变量
+
+|参数名|格式|是否必须|解释|
+|:--:|:--:|:--:|--|
+|page|int|是|第几页|
+|Quantity|int|是|每页多少条|
+
+- 返回数据说明
+```CSharp
+        public class Log
+        {
+            /// <summary>
+            /// 总日志条数
+            /// </summary>
+            public long TotalLogs { get; set; }
+            /// <summary>
+            /// 查询量的日志信息
+            /// </summary>
+            public List<LogClass> Logs { get; set; } = new List<LogClass>();
+        }
+
+    public class LogClass
+    {
+        public enum LogType
+        {
+            /// <summary>
+            /// 会造成整个DDTV无法运行的严重错误
+            /// </summary>
+            Error = 10,
+            /// <summary>
+            /// 虽然现在还没发生问题，但是不管这个问题之后肯定会导致严重错误
+            /// </summary>
+            Error_IsAboutToHappen = 11,
+            /// <summary>
+            /// 会造成错误，但是不影响运行的警告
+            /// </summary>
+            Warn = 20,
+            /// <summary>
+            /// 房间巡逻系统错误日志
+            /// </summary>
+            Warn_RoomPatrol = 23,
+            /// <summary>
+            /// 系统一般消息
+            /// </summary>
+            Info = 30,
+            /// <summary>
+            /// 转码消息
+            /// </summary>
+            Info_Transcod=31,
+            /// <summary>
+            /// API消息
+            /// </summary>
+            Info_API = 32,
+            /// <summary>
+            /// IP协议版本消息
+            /// </summary>
+            Info_IP_Ver = 33,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug = 40,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug_Request = 41,
+            /// <summary>
+            /// DDcenter请求
+            /// </summary>
+            Debug_DDcenter = 42,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug_Request_Error = 43,
+            /// <summary>
+            /// 一些追踪数据
+            /// </summary>
+            Trace = 50,
+            Trace_Web=51,
+            TmpInfo=99,
+            /// <summary>
+            /// 打开所有日志
+            /// </summary>
+            All = int.MaxValue,
+        }
+        /// <summary>
+        /// 日志内容
+        /// </summary>
+        public string? Message { set; get; }
+        /// <summary>
+        /// 日志类型
+        /// </summary>
+        public LogType Type { set; get; }
+        /// <summary>
+        /// 系统时间
+        /// </summary>
+        public DateTime Time { set; get; }
+        /// <summary>
+        /// 软件的运行时间
+        /// </summary>
+        public long RunningTime { set; get; }
+        /// <summary>
+        /// 来源
+        /// </summary>
+        public string? Source { set; get; }
+        /// <summary>
+        /// 时候是需要写入txt记录的错误
+        /// </summary>
+        public bool IsError { set; get; }
+        /// <summary>
+        /// IsError为真时有效，记录错误详细信息
+        /// </summary>
+        public Exception exception { set; get; }
+        /// <summary>
+        /// 是否应该打印到终端
+        /// </summary>
+        public bool IsDisplay { set; get; } =false;
+    }
+```
+:::
+
+### `POST /api/System_LatestLog`
+::: details 获取最新日志
+- 私有变量
+
+|参数名|格式|是否必须|解释|
+|:--:|:--:|:--:|--|
+|Quantity|int|最新的多少条|
+
+- 返回数据说明
+```CSharp
+        public class Log
+        {
+            /// <summary>
+            /// 查询量的日志信息
+            /// </summary>
+            public List<LogClass> Logs { get; set; } = new List<LogClass>();
+        }
+
+    public class LogClass
+    {
+        public enum LogType
+        {
+            /// <summary>
+            /// 会造成整个DDTV无法运行的严重错误
+            /// </summary>
+            Error = 10,
+            /// <summary>
+            /// 虽然现在还没发生问题，但是不管这个问题之后肯定会导致严重错误
+            /// </summary>
+            Error_IsAboutToHappen = 11,
+            /// <summary>
+            /// 会造成错误，但是不影响运行的警告
+            /// </summary>
+            Warn = 20,
+            /// <summary>
+            /// 房间巡逻系统错误日志
+            /// </summary>
+            Warn_RoomPatrol = 23,
+            /// <summary>
+            /// 系统一般消息
+            /// </summary>
+            Info = 30,
+            /// <summary>
+            /// 转码消息
+            /// </summary>
+            Info_Transcod=31,
+            /// <summary>
+            /// API消息
+            /// </summary>
+            Info_API = 32,
+            /// <summary>
+            /// IP协议版本消息
+            /// </summary>
+            Info_IP_Ver = 33,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug = 40,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug_Request = 41,
+            /// <summary>
+            /// DDcenter请求
+            /// </summary>
+            Debug_DDcenter = 42,
+            /// <summary>
+            /// 调试信息
+            /// </summary>
+            Debug_Request_Error = 43,
+            /// <summary>
+            /// 一些追踪数据
+            /// </summary>
+            Trace = 50,
+            Trace_Web=51,
+            TmpInfo=99,
+            /// <summary>
+            /// 打开所有日志
+            /// </summary>
+            All = int.MaxValue,
+        }
+        /// <summary>
+        /// 日志内容
+        /// </summary>
+        public string? Message { set; get; }
+        /// <summary>
+        /// 日志类型
+        /// </summary>
+        public LogType Type { set; get; }
+        /// <summary>
+        /// 系统时间
+        /// </summary>
+        public DateTime Time { set; get; }
+        /// <summary>
+        /// 软件的运行时间
+        /// </summary>
+        public long RunningTime { set; get; }
+        /// <summary>
+        /// 来源
+        /// </summary>
+        public string? Source { set; get; }
+        /// <summary>
+        /// 时候是需要写入txt记录的错误
+        /// </summary>
+        public bool IsError { set; get; }
+        /// <summary>
+        /// IsError为真时有效，记录错误详细信息
+        /// </summary>
+        public Exception exception { set; get; }
+        /// <summary>
+        /// 是否应该打印到终端
+        /// </summary>
+        public bool IsDisplay { set; get; } =false;
+    }
+```
+:::
+
+
+
 ### `POST /api/System_QueryWebFirstStart`
 ::: details 返回一个可以自行设定的初始化状态值(用于前端自行判断)
-- 私有变量  
+- 私有变量
 
 无
 
 - 注意事项
 该接口用于前端自行判断，启动后默认值都为真，不能作为DDTV是否正在运行的参考
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return bool;//直接指示当前的WEB_FirstStart值为多少
 
@@ -476,7 +746,7 @@ return bool;//直接指示当前的WEB_FirstStart值为多少
 
 ### `POST /api/System_SetWebFirstStart`
 ::: details 设置初始化状态值
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -485,7 +755,7 @@ return bool;//直接指示当前的WEB_FirstStart值为多少
 - 注意事项
 用于设置初始化状态值(WEB_FirstStart)；该值无实际的逻辑处理，用于前端自行判断使用。
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return MessageBase.Success(nameof(System_Config), state, $"设置初始化标志位为:{state}");
 ```
@@ -493,14 +763,14 @@ return MessageBase.Success(nameof(System_Config), state, $"设置初始化标志
 
 ### `POST /api/System_QueryUserState`
 ::: details 用于判断用户登陆状态是否有效
-- 私有变量  
+- 私有变量
 无
 
-- 注意事项  
-该接口应该是用于登陆状态是否有效的检测，检测到登陆状态失效就应该停止调用本接口，直到登陆状态恢复  
+- 注意事项
+该接口应该是用于登陆状态是否有效的检测，检测到登陆状态失效就应该停止调用本接口，直到登陆状态恢复
 检测登陆中时是否登陆成功，应该使用`/api/LoingState`进行查询
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return bool;//直接指示当前的登陆状态
 
@@ -510,7 +780,7 @@ return bool;//直接指示当前的登陆状态
 
 ### `POST /api/Config_Transcod`
 ::: details 设置自动转码总开关
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -519,7 +789,7 @@ return bool;//直接指示当前的登陆状态
 - 注意事项
 该接口需要依赖ffmpeg，请根据`进阶功能说明`中的`自动转码`页面的内容进行检查是否已经安装ffmpeg
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "自动转码成功");
 ```
@@ -527,7 +797,7 @@ MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "�
 
 ### `POST /api/Config_FileSplit`
 ::: details 根据文件大小自动切片
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -536,7 +806,7 @@ MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "�
 - 注意事项
 请勿输入1-10485760(1MB)的数值，在某些清晰度较高的直播间中，初始数据包会大于这个数值，这种情况下会报错
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "根据文件大小自动切片成功");
 ```
@@ -545,7 +815,7 @@ MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "�
 
 ### `POST /api/Config_DanmuRec`
 ::: details 弹幕录制总共开关(包括礼物、舰队、SC)
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -554,7 +824,7 @@ MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "�
 - 注意事项
 该弹幕录制接口总共开关包括礼物、舰队、SC的录制开关，并且个房间自己在房间配置列表单独设置，这个只是是否启用弹幕录制功能的总共开关，要录制某个房间除了打开这个设置还需要房间配置启动打开录制
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "弹幕录制总共开关成功(注:该弹幕录制接口总共开关包括礼物、舰队、SC的录制开关，并且个房间自己在房间配置列表单独设置，这个只是是否启用弹幕录制功能的总共开关，要录制某个房间除了打开这个设置还需要房间配置启动打开录制)");
 ```
@@ -563,14 +833,14 @@ MessageBase.Success(nameof(Config_Transcod), (state ? "打开" : "关闭") + "�
 
 ### `POST /api/Config_GetFollow`
 ::: details 导入关注列表中的V
-- 私有变量  
+- 私有变量
 
 无
 
 - 注意事项
 该接口需要依赖哔哩哔哩账号登陆，使用前请确认已经扫码登陆
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 List<followClass>;
 
@@ -585,39 +855,39 @@ List<followClass>;
 
 ### `POST /api/File_GetAllFileList`
 ::: details 获取已录制的文件列表
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 List<string> FileList;
 ```
 :::
 
-### `POST /api/File_GetFile`
+### `GET /api/File_GetFile`
 ::: details 下载对应的文件
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |FileName|string|是|根据提交的文件路径和文件名下载该文件|
 
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
-return File();    
+return File();
 ```
 :::
 
 ### `POST /api/File_GetFilePathList`
 ::: details 根据文件树结构返回已录制的文件总列表
-- 私有变量  
+- 私有变量
 
-无  
+无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
-        return List<FileNames>;  
+        return List<FileNames>;
 
         public class FileNames
         {
@@ -647,10 +917,10 @@ return File();
 
 ### `POST /api/File_GetTypeFileList`
 ::: details 分类获取已录制的文件总列表
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
     public class TypeFileList
     {
@@ -666,14 +936,14 @@ return File();
 
 ### `POST /api/Login`
 ::: details WEB登陆
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |UserName|string|是|用于登陆的用户名，默认设置为ami，在配置文件中进行设置|
 |Password|string|是|用于登陆的密码，默认设置为ddtv，在配置文件中进行设置|
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
  private class LoginOK
         {
@@ -684,39 +954,39 @@ return File();
 
 ### `GET /api/loginqr`
 ::: details 在提示登陆的情况下获取用于的登陆二维码
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return File(ms.ToArray(), "image/png");
 ```
 :::
 
 ### `POST /api/Login_Reset`
-::: details 重新登陆哔哩哔哩账号  
-- 私有变量  
+::: details 重新登陆哔哩哔哩账号
+- 私有变量
 
 无
 
-- 返回数据说明     
+- 返回数据说明
 
 直接返回操作结果说明的字符串
 
 :::
 
 ### `POST /api/Login_State`
-::: details 查询内部登陆状态  
-- 私有变量  
+::: details 查询内部登陆状态
+- 私有变量
 
 无
 
-- 返回数据说明     
+- 返回数据说明
 
-```CSharp  
+```CSharp
 
         internal class LoginC
-        {       
+        {
             internal LoginStatus LoginState { get; set; }
         }
 
@@ -747,10 +1017,10 @@ return File(ms.ToArray(), "image/png");
 
 ### `POST /api/Rec_RecordingInfo`
 ::: details 获取下载中的任务情况详细情况
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明     
+- 返回数据说明
 ```CSharp
 return List<Downloads>;
 
@@ -859,10 +1129,10 @@ return List<Downloads>;
 
 ### `POST /api/Rec_RecordingInfo_Lite`
 ::: details 获取下载中的任务情况简略情况
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return List<LiteDownloads>;
 
@@ -903,10 +1173,10 @@ return List<LiteDownloads>;
 
 ### `POST /api/Rec_RecordCompleteInfon`
 ::: details 获取已经完成的任务详细情况
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return List<Downloads>;
 
@@ -1015,10 +1285,10 @@ return List<Downloads>;
 
 ### `POST /api/Rec_RecordCompleteInfon_Lite`
 ::: details 获取已经完成的任务简略情况
-- 私有变量  
+- 私有变量
 无
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return List<LiteDownloads>;
 
@@ -1059,7 +1329,7 @@ return List<LiteDownloads>;
 
 ### `POST /api/Rec_CancelDownload`
 ::: details 取消某个下载任务
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -1068,7 +1338,7 @@ return List<LiteDownloads>;
 - 注意事项
 注意！是UID！是UID！
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return string;
 ```
@@ -1076,15 +1346,15 @@ return string;
 
 ### `POST /api/Room_AllInfo`
 ::: details 获取房间详细配置信息
-- 私有变量  
+- 私有变量
 无
 
 - 注意事项
 该接口根据服务器上房间配置的多少决定，数据量可能会较多；在启动成功前30秒最好不要调用，该阶段属于API请求更新数据阶段，可能为空的数据较多。
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
-return List<RoomInfoClass.RoomInfo>;
+    return List<RoomInfoClass.RoomInfo>;
 
         public class RoomInfo
         {
@@ -1099,7 +1369,7 @@ return List<RoomInfoClass.RoomInfo>;
             /// <summary>
             /// 关注数
             /// </summary>
-            public int attention { get; set; } 
+            public int attention { get; set; }
             /// <summary>
             /// 直播间房间号(直播间实际房间号)
             /// </summary>
@@ -1221,6 +1491,10 @@ return List<RoomInfoClass.RoomInfo>;
             /// </summary>
             public int special_type { set; get; }
             /// <summary>
+            /// 是否是临时播放项目
+            /// </summary>
+            public bool IsTemporaryPlay { set; get; } = false;
+            /// <summary>
             /// 直播间状态(0:无房间 1:有房间)
             /// </summary>
             public int roomStatus { set; get; }
@@ -1285,6 +1559,10 @@ return List<RoomInfoClass.RoomInfo>;
             /// </summary>
             public List<Downloads> DownloadingList { set; get; } = new List<Downloads>();
             /// <summary>
+            /// 是否被用户取消操作
+            /// </summary>
+            public bool IsUserCancel { set; get; }=false;
+            /// <summary>
             /// 房间历史下载记录
             /// </summary>
             public List<Downloads> DownloadedLog { set; get; } = new List<Downloads>();
@@ -1299,7 +1577,79 @@ return List<RoomInfoClass.RoomInfo>;
             /// <summary>
             /// 该房间当前的任务时间
             /// </summary>
-            public DateTime CreationTime { set; get; } = DateTime.Now; 
+            public DateTime CreationTime { set; get; } = DateTime.Now;
+            /// <summary>
+            /// 该房间最近一次完成的下载任务的文件信息
+            /// </summary>
+            public DownloadedFileInfo DownloadedFileInfo { set; get; }=new DownloadedFileInfo();
+            /// <summary>
+            /// 该房间录制完成后会执行的Shell命令
+            /// </summary>
+            public string Shell { set; get; } = "";
+            /// <summary>
+            /// 用于房间监控系统，记录的是监控系统检测到开始直播的时间
+            /// </summary>
+            public DateTime MonitoringSystem_Airtime = DateTime.Now;
+            /// <summary>
+            ///  用于房间监控系统，记录开播时的关注数
+            /// </summary>
+            public int MonitoringSystem_Attention = 0;
+            /// <summary>
+            /// 当前Host地址
+            /// </summary>
+            public string Host { set; get; } = "";
+            /// <summary>
+            /// 当前模式（0:FLV 1:HLS）
+            /// </summary>
+            public int CurrentMode { set; get; } = 0;
+            /// <summary>
+            /// 下载的文件记录
+            /// </summary>
+            public List<DownloadedFiles> Files { set; get; } = new List<DownloadedFiles>();
+            public class DownloadedFiles
+            {
+                public string FilePath { set; get; }
+                public bool IsTranscod { set; get; } = false;
+            }
+        }
+        public class RoomWebSocket
+        {
+            /// <summary>
+            /// 是否已连接
+            /// </summary>
+            public bool IsConnect { set; get; }
+            public long dokiTime { set; get; }
+            /// <summary>
+            /// WbdScket服务器信息
+            /// </summary>
+            public API.LiveChatScript.LiveChatListener LiveChatListener { set; get; } = new API.LiveChatScript.LiveChatListener();
+        }
+        public class DownloadedFileInfo
+        {
+            /// <summary>
+            /// 修复后的文件完整路径List
+            /// </summary>
+            public List<FileInfo> AfterRepairFiles { set; get; } = new List<FileInfo>();
+            /// <summary>
+            /// 修复前的文件完整路径List
+            /// </summary>
+            public List<FileInfo> BeforeRepairFiles { set; get; } = new List<FileInfo>();
+            /// <summary>
+            /// 录制的弹幕文件
+            /// </summary>
+            public FileInfo DanMuFile { set; get; }
+            /// <summary>
+            /// 录制的SC记录文件
+            /// </summary>
+            public FileInfo SCFile { set; get; }
+            /// <summary>
+            /// 录制的大航海记录文件
+            /// </summary>
+            public FileInfo GuardFile { set; get; }
+            /// <summary>
+            /// 录制的礼物记录文件
+            /// </summary>
+            public FileInfo GiftFile { set; get; }
         }
 ```
 :::
@@ -1307,13 +1657,13 @@ return List<RoomInfoClass.RoomInfo>;
 
 ### `POST /api/Room_SummaryInfo`
 ::: details 获取房间简要配置信息
-- 私有变量  
+- 私有变量
 无
 
 - 注意事项
 该接口根据服务器上房间配置的多少决定，数据量可能会较多；在启动成功前30秒最好不要调用，该阶段属于API请求更新数据阶段，可能为空的数据较多。
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return List<RoomInfoClass.RoomInfo>;
 
@@ -1357,17 +1707,17 @@ return List<RoomInfoClass.RoomInfo>;
 
 ### `POST /api/Room_Add`
 ::: details 增一个加房间配置
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |UID|long|是|要增加到房间配置中的账号UID|
 
 - 注意事项
-该接口的调用频率不能超过3秒/次，该接口后面封装的B站原生API较为复杂，如果请求过多，可能会造成频率过高导致412鉴权错误导致IP被黑名单半小时左右。
+该接口的调用频率不能超过3秒/次，该接口后面封装的阿B原生API较为复杂，如果请求过多，可能会造成频率过高导致412鉴权错误导致IP被黑名单半小时左右。
 
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return string;
 ```
@@ -1375,13 +1725,13 @@ return string;
 
 ### `POST /api/Room_Del`
 ::: details 删除一个房间配置
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |UID|long|是|要从房间配置中删除的账号UID|
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return string;
 ```
@@ -1389,14 +1739,14 @@ return string;
 
 ### `POST /api/Room_AutoRec`
 ::: details 修改房间自动录制配置信息
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |UID|long|是|要修改自动录制配置的账号UID|
 |IsAutoRec|bool|是|打开\关闭开播自动录制|
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return string;
 ```
@@ -1405,7 +1755,7 @@ return string;
 
 ### `POST /api/Room_DanmuRec`
 ::: details 修改房间弹幕录制配置信息
-- 私有变量  
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
@@ -1415,7 +1765,7 @@ return string;
 - 注意事项
 该功能收到总弹幕录制配置的限制，如要打开该房间的弹幕录制功能，请确认总开关已经启动
 
-- 返回数据说明   
+- 返回数据说明
 ```CSharp
 return string;
 ```
@@ -1423,14 +1773,14 @@ return string;
 
 
 ### `POST /api/User_Search`
-::: details 通过B站搜索搜索直播用户
-- 私有变量  
+::: details 通过B阿B搜索搜索直播用户
+- 私有变量
 
 |参数名|格式|是否必须|解释|
 |:--:|:--:|:--:|--|
 |keyword|string|是|需要搜索的关键词|
 
-- 返回数据说明   
+- 返回数据说明
 
 | 字段        | 类型  | 内容           | 备注                                                   |
 | ----------- | ----- | -------------- | ------------------------------------------------------ |
